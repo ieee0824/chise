@@ -9,6 +9,8 @@ import (
 	"path/filepath"
 	"time"
 
+	"golang.org/x/crypto/sha3"
+
 	"github.com/atotto/clipboard"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/credentials"
@@ -68,7 +70,12 @@ func main() {
 	}
 	u := newUploader(cfg)
 
-	key := fmt.Sprintf("%v.png", time.Now().UnixNano())
+	buf := []byte(fmt.Sprint(time.Now().UnixNano()))
+
+	h := make([]byte, 64)
+	sha3.ShakeSum256(h, buf)
+
+	key := fmt.Sprintf("%v.png", fmt.Sprintf("%X", h))
 	fileName := fmt.Sprintf("/tmp/%v", key)
 
 	cmd := exec.Command("screencapture", "-i", fileName)
